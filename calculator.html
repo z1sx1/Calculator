@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>monochrome · calculator | landscape edition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none; /* clean interaction */
+        }
+
+        body {
+            background: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', 'Roboto', 'Courier New', monospace;
+            padding: 1.2rem;
+        }
+
+        /* LANDSCAPE-FIRST DESIGN: wider calculator, horizontal flow */
+        .calculator {
+            background-color: #000000;
+            border-radius: 2.2rem;
+            width: 100%;
+            max-width: 860px;      /* wider for landscape comfort */
+            padding: 1.8rem 2rem 2rem 2rem;
+            box-shadow: 20px 20px 0 0 rgba(0, 0, 0, 0.04), 0 25px 40px -12px rgba(0, 0, 0, 0.3);
+            transition: all 0.1s ease;
+        }
+
+        /* LANDSCAPE LAYOUT: display on left, buttons grid on right (side-by-side) */
+        .landscape-container {
+            display: flex;
+            flex-direction: row;
+            gap: 2rem;
+            align-items: stretch;
+        }
+
+        /* display panel — bold, spacious, left side */
+        .display {
+            background-color: #ffffff;
+            border: 2px solid #000000;
+            border-radius: 1.8rem;
+            padding: 1.5rem 1.4rem;
+            flex: 1.1;
+            min-width: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: right;
+            word-wrap: break-word;
+            word-break: break-word;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+        }
+
+        .previous-operand {
+            font-size: 1.1rem;
+            color: #3a3a3a;
+            font-weight: 450;
+            font-family: monospace;
+            min-height: 28px;
+            margin-bottom: 10px;
+            letter-spacing: -0.2px;
+        }
+
+        .current-operand {
+            font-size: 2.6rem;
+            font-weight: 700;
+            color: #000000;
+            font-family: monospace;
+            line-height: 1.2;
+            letter-spacing: -1.2px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+
+        /* button area — right side, compact but generous grid */
+        .buttons-area {
+            flex: 2;
+        }
+
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            height: 100%;
+        }
+
+        /* base button — pure monochrome, sharp */
+        .btn {
+            background-color: #ffffff;
+            border: 2px solid #000000;
+            border-radius: 2rem;
+            padding: 0.9rem 0;
+            font-size: 1.6rem;
+            font-weight: 550;
+            font-family: monospace;
+            cursor: pointer;
+            transition: 0.07s linear;
+            text-align: center;
+            color: #000000;
+            outline: none;
+        }
+
+        /* tactile press effect */
+        .btn:active {
+            background-color: #000000;
+            color: #ffffff;
+            transform: scale(0.95);
+            border-color: #000000;
+        }
+
+        @media (hover: hover) {
+            .btn:hover {
+                background-color: #f2f2f2;
+                border-color: #000000;
+                transform: scale(0.97);
+            }
+        }
+
+        /* operators & special */
+        .btn-operator {
+            background-color: #ffffff;
+            font-weight: 700;
+            font-size: 1.9rem;
+        }
+
+        .btn-equals {
+            background-color: #000000;
+            color: #ffffff;
+            border-color: #000000;
+            font-weight: 700;
+            font-size: 1.8rem;
+        }
+
+        .btn-equals:active {
+            background-color: #ffffff;
+            color: #000000;
+        }
+
+        @media (hover: hover) {
+            .btn-equals:hover {
+                background-color: #2a2a2a;
+                color: #ffffff;
+            }
+        }
+
+        .btn-clear, .btn-delete {
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-delete {
+            font-size: 1.5rem;
+        }
+
+        .btn-special {
+            font-weight: 550;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.7rem;
+            font-family: monospace;
+            color: #8a8a8a;
+            background: transparent;
+        }
+
+        .footer-text {
+            color: #a0a0a0;
+            letter-spacing: 0.3px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .keyboard-hint {
+            display: inline-block;
+            background: #f0f0f0;
+            color: #1e1e1e;
+            font-size: 0.65rem;
+            font-family: monospace;
+            padding: 0.2rem 0.6rem;
+            border-radius: 30px;
+            border: 1px solid #ccc;
+        }
+
+        /* LANDSCAPE RESPONSIVE: for tablets & phones in landscape */
+        @media (max-width: 780px) {
+            .calculator {
+                max-width: 100%;
+                padding: 1.2rem 1.2rem 1.4rem;
+            }
+            .landscape-container {
+                gap: 1.2rem;
+                flex-wrap: wrap;    /* on narrow landscape, buttons stack? but we keep side by side if possible */
+            }
+            .display {
+                flex: 1;
+                min-width: 180px;
+                padding: 1rem;
+            }
+            .current-operand {
+                font-size: 2rem;
+            }
+            .buttons-grid {
+                gap: 10px;
+            }
+            .btn {
+                padding: 0.7rem 0;
+                font-size: 1.4rem;
+            }
+            .btn-operator {
+                font-size: 1.7rem;
+            }
+        }
+
+        /* smaller devices: force row to wrap into column for very narrow widths (portrait fallback) */
+        @media (max-width: 580px) {
+            .landscape-container {
+                flex-direction: column;
+                gap: 1.2rem;
+            }
+            .display {
+                width: 100%;
+                min-height: 110px;
+            }
+            .buttons-grid {
+                gap: 12px;
+            }
+            .btn {
+                padding: 0.9rem 0;
+                font-size: 1.5rem;
+            }
+            .current-operand {
+                font-size: 2.4rem;
+            }
+        }
+
+        /* extra fine-tuning for large landscape screens */
+        @media (min-width: 1100px) {
+            .calculator {
+                max-width: 980px;
+            }
+            .current-operand {
+                font-size: 3rem;
+            }
+            .btn {
+                padding: 1.1rem 0;
+                font-size: 1.8rem;
+            }
+            .btn-operator {
+                font-size: 2.1rem;
+            }
+            .buttons-grid {
+                gap: 16px;
+            }
+        }
+
+        /* edge fix */
+        .btn:focus-visible {
+            outline: 2px solid black;
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+<div class="calculator">
+    <!-- landscape container: display left, keypad right -->
+    <div class="landscape-container">
+        <!-- Display panel (left side) -->
+        <div class="display">
+            <div class="previous-operand" id="previousOperand"></div>
+            <div class="current-operand" id="currentOperand">0</div>
+        </div>
+
+        <!-- Buttons panel (right side) -->
+        <div class="buttons-area">
+            <div class="buttons-grid">
+                <!-- Row 1 -->
+                <button class="btn btn-clear" data-action="clear">AC</button>
+                <button class="btn btn-delete" data-action="delete">⌫</button>
+                <button class="btn btn-operator" data-operator="/">÷</button>
+                <button class="btn btn-operator" data-operator="*">×</button>
+
+                <!-- Row 2 -->
+                <button class="btn" data-number="7">7</button>
+                <button class="btn" data-number="8">8</button>
+                <button class="btn" data-number="9">9</button>
+                <button class="btn btn-operator" data-operator="-">−</button>
+
+                <!-- Row 3 -->
+                <button class="btn" data-number="4">4</button>
+                <button class="btn" data-number="5">5</button>
+                <button class="btn" data-number="6">6</button>
+                <button class="btn btn-operator" data-operator="+">+</button>
+
+                <!-- Row 4 -->
+                <button class="btn" data-number="1">1</button>
+                <button class="btn" data-number="2">2</button>
+                <button class="btn" data-number="3">3</button>
+                <button class="btn btn-equals" data-action="equals">=</button>
+
+                <!-- Row 5 -->
+                <button class="btn" data-number="0">0</button>
+                <button class="btn" data-number=".">.</button>
+                <button class="btn btn-special" data-action="sign">+/−</button>
+                <button class="btn btn-special" data-action="percent">%</button>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <div class="footer-text">
+            <span>⚫ monochrome · landscape</span>
+            <span class="keyboard-hint">⌨️ 0-9  .  + - * /  Enter  ⌫  Esc  %</span>
+        </div>
+    </footer>
+</div>
+
+<script>
+    // --- PURE BLACK & WHITE CALCULATOR (landscape enhanced) ---
+    let currentInput = "0";        
+    let previousValue = null;       
+    let currentOperator = null;     
+    let waitingForOperand = false;  
+
+    const previousOperandElem = document.getElementById("previousOperand");
+    const currentOperandElem = document.getElementById("currentOperand");
+    
+    function formatNumberForDisplay(num) {
+        if (num === null || isNaN(num)) return '0';
+        let str = num.toString();
+        if (str.includes('.')) {
+            str = str.replace(/\.?0+$/, '');
+            if (str.endsWith('.')) str = str.slice(0, -1);
+        }
+        if (str === '') return '0';
+        return str;
+    }
+    
+    function getOperatorSymbol(op) {
+        if (op === '+') return '+';
+        if (op === '-') return '−';
+        if (op === '*') return '×';
+        if (op === '/') return '÷';
+        return '';
+    }
+    
+    function updateDisplay() {
+        if (previousValue !== null && currentOperator !== null) {
+            let prevFormatted = formatNumberForDisplay(previousValue);
+            let operatorSymbol = getOperatorSymbol(currentOperator);
+            previousOperandElem.innerText = `${prevFormatted} ${operatorSymbol}`;
+        } else {
+            previousOperandElem.innerText = "";
+        }
+        
+        let displayCurrent = currentInput;
+        if (displayCurrent === "") displayCurrent = "0";
+        if (displayCurrent.length > 22) {
+            let num = parseFloat(displayCurrent);
+            if (!isNaN(num)) displayCurrent = num.toExponential(12);
+            else displayCurrent = "Error";
+        }
+        currentOperandElem.innerText = displayCurrent;
+    }
+    
+    function sanitizeNumberString(str) {
+        if (str === "") return "0";
+        if (str === "-") return "0";
+        if (str.includes('.')) {
+            let [intPart, decPart] = str.split('.');
+            if (intPart.length > 1) intPart = intPart.replace(/^0+/, '');
+            if (intPart === "" || intPart === "-") intPart = intPart === "-" ? "-0" : "0";
+            return `${intPart}.${decPart}`;
+        } else {
+            let cleaned = str.replace(/^0+/, '');
+            if (cleaned === "" || cleaned === "-") cleaned = cleaned === "-" ? "-0" : "0";
+            return cleaned;
+        }
+    }
+    
+    function inputNumber(digit) {
+        if (waitingForOperand) {
+            currentInput = digit === '.' ? "0." : digit;
+            waitingForOperand = false;
+        } else {
+            if (digit === '.' && currentInput.includes('.')) return;
+            if (currentInput === "0" && digit !== '.') {
+                currentInput = digit;
+            } else {
+                currentInput += digit;
+            }
+        }
+        currentInput = sanitizeNumberString(currentInput);
+        updateDisplay();
+    }
+    
+    function toggleSign() {
+        if (waitingForOperand) {
+            currentInput = "-0";
+            waitingForOperand = false;
+        } else {
+            let numericVal = parseFloat(currentInput);
+            if (isNaN(numericVal)) numericVal = 0;
+            numericVal = -numericVal;
+            currentInput = numericVal.toString();
+        }
+        currentInput = sanitizeNumberString(currentInput);
+        updateDisplay();
+    }
+    
+    function applyPercent() {
+        if (waitingForOperand) {
+            currentInput = "0";
+            waitingForOperand = false;
+        }
+        let numericVal = parseFloat(currentInput);
+        if (isNaN(numericVal)) numericVal = 0;
+        numericVal = numericVal / 100;
+        currentInput = numericVal.toString();
+        currentInput = sanitizeNumberString(currentInput);
+        updateDisplay();
+    }
+    
+    function allClear() {
+        currentInput = "0";
+        previousValue = null;
+        currentOperator = null;
+        waitingForOperand = false;
+        updateDisplay();
+    }
+    
+    function deleteLast() {
+        if (waitingForOperand) {
+            currentInput = "0";
+            waitingForOperand = false;
+            updateDisplay();
+            return;
+        }
+        if (currentInput.length === 1) {
+            currentInput = "0";
+        } else {
+            currentInput = currentInput.slice(0, -1);
+            if (currentInput === "" || currentInput === "-") currentInput = "0";
+        }
+        currentInput = sanitizeNumberString(currentInput);
+        updateDisplay();
+    }
+    
+    function calculate(a, b, operator) {
+        const num1 = parseFloat(a);
+        const num2 = parseFloat(b);
+        if (isNaN(num1) || isNaN(num2)) return NaN;
+        switch (operator) {
+            case '+': return num1 + num2;
+            case '-': return num1 - num2;
+            case '*': return num1 * num2;
+            case '/': 
+                if (num2 === 0) return NaN;
+                return num1 / num2;
+            default: return NaN;
+        }
+    }
+    
+    function setOperator(op) {
+        const inputValue = parseFloat(currentInput);
+        if (isNaN(inputValue)) {
+            allClear();
+            return;
+        }
+        
+        if (currentOperator !== null && !waitingForOperand) {
+            let result = calculate(previousValue, inputValue, currentOperator);
+            if (isNaN(result) || !isFinite(result)) {
+                currentInput = "Error";
+                previousValue = null;
+                currentOperator = null;
+                waitingForOperand = true;
+                updateDisplay();
+                return;
+            }
+            previousValue = result;
+            currentInput = result.toString();
+            currentInput = sanitizeNumberString(currentInput);
+            updateDisplay();
+        } else {
+            previousValue = inputValue;
+        }
+        
+        currentOperator = op;
+        waitingForOperand = true;
+        updateDisplay();
+    }
+    
+    function evaluateResult() {
+        if (currentOperator === null || waitingForOperand) {
+            return;
+        }
+        const currentNumber = parseFloat(currentInput);
+        if (isNaN(currentNumber) || previousValue === null) return;
+        
+        let result = calculate(previousValue, currentNumber, currentOperator);
+        if (isNaN(result) || !isFinite(result)) {
+            currentInput = "Error";
+            previousValue = null;
+            currentOperator = null;
+            waitingForOperand = true;
+            updateDisplay();
+            return;
+        }
+        
+        let resultStr = result.toString();
+        if (resultStr.includes('.')) {
+            resultStr = resultStr.replace(/\.?0+$/, '');
+            if (resultStr.endsWith('.')) resultStr = resultStr.slice(0, -1);
+        }
+        currentInput = resultStr;
+        previousValue = null;
+        currentOperator = null;
+        waitingForOperand = true;
+        updateDisplay();
+    }
+    
+    // --- FULL KEYBOARD (PC & external keyboard on tablets) ---
+    function handleKeyboard(e) {
+        const key = e.key;
+        const controlKeys = ['0','1','2','3','4','5','6','7','8','9','.', '+', '-', '*', '/', 'Enter', '=', 'Escape', 'Backspace', '%', 'Delete'];
+        if (controlKeys.includes(key)) {
+            e.preventDefault();
+        }
+        
+        if (/^[0-9]$/.test(key)) inputNumber(key);
+        else if (key === '.') inputNumber('.');
+        else if (key === '+') setOperator('+');
+        else if (key === '-') setOperator('-');
+        else if (key === '*') setOperator('*');
+        else if (key === '/') setOperator('/');
+        else if (key === 'Enter' || key === '=') evaluateResult();
+        else if (key === 'Escape') allClear();
+        else if (key === 'Backspace') deleteLast();
+        else if (key === '%') applyPercent();
+        else if (key === 'Delete') allClear();
+    }
+    
+    function bindEvents() {
+        document.querySelectorAll('[data-number]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const number = btn.getAttribute('data-number');
+                inputNumber(number);
+            });
+        });
+        
+        document.querySelectorAll('[data-operator]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const op = btn.getAttribute('data-operator');
+                setOperator(op);
+            });
+        });
+        
+        const clearBtn = document.querySelector('[data-action="clear"]');
+        if (clearBtn) clearBtn.addEventListener('click', () => allClear());
+        
+        const delBtn = document.querySelector('[data-action="delete"]');
+        if (delBtn) delBtn.addEventListener('click', () => deleteLast());
+        
+        const equalsBtn = document.querySelector('[data-action="equals"]');
+        if (equalsBtn) equalsBtn.addEventListener('click', () => evaluateResult());
+        
+        const signBtn = document.querySelector('[data-action="sign"]');
+        if (signBtn) signBtn.addEventListener('click', () => toggleSign());
+        
+        const percentBtn = document.querySelector('[data-action="percent"]');
+        if (percentBtn) percentBtn.addEventListener('click', () => applyPercent());
+    }
+    
+    function init() {
+        bindEvents();
+        window.addEventListener('keydown', handleKeyboard);
+        updateDisplay();
+    }
+    
+    init();
+</script>
+</body>
+</html>
